@@ -56,15 +56,16 @@ class JSONSerializable:
 
 
 class JSONEnum(Enum):
-    def __init__(self, value: Any):
-        super().__init__(value)
-        fqcn = f"{self.__module__}#{self.__class__.__qualname__}"
-        self._cls_type_ = fqcn
-        if fqcn not in _type_map:
-            _type_map[fqcn] = self.__class__
+    def __init__(self, _: Any):
+        self._cls_type_ = self.fqcn()
+        json_register_class(self.__class__)
 
     def to_dict(self) -> dict[str, str]:
         return {"_cls_type_": self._cls_type_, "name": self.name}
+
+    @classmethod
+    def fqcn(cls: Type[JSONEnum]) -> str:
+        return f"{cls.__module__}#{cls.__qualname__}"
 
     @classmethod
     def from_dict(cls, obj: dict[str, str]) -> JSONEnum:
@@ -74,30 +75,31 @@ class JSONEnum(Enum):
 class DefaultJSONEncoder(JSONEncoder):
     """Generic JSON Encoder to encode generic types and objects that are instances of JSONSerializable."""
 
-    def default(self, obj: Any) -> Any:
-        if isinstance(obj, JSONSerializable) or isinstance(obj, JSONEnum):
-            return obj.to_dict()
-        return super().default(obj)
+    def default(self, o: Any) -> Any:
+        if isinstance(o, JSONSerializable) or isinstance(o, JSONEnum):
+            return o.to_dict()
+        return super().default(o)
 
 
-def default_json_dumps(obj: Any) -> str:
+def default_json_dumps(obj: Any) -> (str | bytes):
     return dumps(obj, cls=DefaultJSONEncoder)
 
 
 class DefaultJSONDecoder(JSONDecoder):
     """Generic JSON Decoder for generic types and classes that implement JSONSerializable."""
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(object_hook=self.object_hook, *args, **kwargs)
+    def __init__(self, *args: tuple[Any], **kwargs: dict[str, Any]):
+        super().__init__(object_hook=self.as_json_serializable, *args, **kwargs)
 
     @staticmethod
-    def object_hook(obj: dict[str, Any]) -> Any:
-        if '_cls_type_' in obj:
-            cls_type = obj.get('_cls_type_')
-            cls = _type_map[cls_type]
-            return cls.from_dict(obj)
-        return obj
+    def as_json_serializable(o: dict[str, Any]) -> Any:
+        if '_cls_type_' in o:
+            cls_type = o.get('_cls_type_')
+            if isinstance(cls_type, str):
+                cls = _type_map[cls_type]
+                return cls.from_dict(o)
+        return o
 
 
-def default_json_loads(json_string: str) -> Any:
+def default_json_loads(json_string: str | bytes) -> Any:
     return loads(json_string, cls=DefaultJSONDecoder)

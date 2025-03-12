@@ -14,10 +14,16 @@ class ExampleEnum(JSONEnum):
     TWO = auto()
 
 
+class NamedEnum(JSONEnum):
+    ONE = "bar"
+    TWO = "baz"
+
+
 class ExampleWithEnumExampleJSONSerializable(JSONSerializable):
-    def __init__(self, string: str = "bar"):
-        super().__init__(string=string)
+    def __init__(self, arg: str = "bar"):
+        super().__init__(string=arg)
         self.enum = ExampleEnum.TWO
+        self.other = NamedEnum.TWO
 
 
 class ExampleJSONSerializable(JSONSerializable):
