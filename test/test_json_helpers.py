@@ -1,7 +1,7 @@
 import io
 import json
-import unittest
 from enum import auto
+from unittest import TestCase
 
 import jsonlines
 
@@ -41,7 +41,7 @@ class ExampleMemberObjectJSONSerializable(JSONSerializable):
         self.right = ExampleJSONSerializable("bar")
 
 
-class TestJSONHelpers(unittest.TestCase):
+class TestJSONHelpers(TestCase):
     def test_simple(self):
         data = ExampleJSONSerializable()
         encoded = json.dumps(data, cls=DefaultJSONEncoder)
@@ -68,7 +68,7 @@ class TestJSONHelpers(unittest.TestCase):
         self.assertDictEqual(data.__dict__, decoded.__dict__)
 
 
-class TestJSONLinesHelpers(unittest.TestCase):
+class TestJSONLinesHelpers(TestCase):
     def test_simple(self):
         buffer = io.StringIO()
         data_1 = ExampleJSONSerializable("Hello")
