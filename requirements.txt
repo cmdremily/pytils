@@ -1,0 +1,2 @@
+jsonlines~=4.0.0
+setuptools~=75.5.0
