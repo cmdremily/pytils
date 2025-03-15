@@ -21,7 +21,7 @@ class NamedEnum(JSONEnum):
 
 class ExampleWithEnumExampleJSONSerializable(JSONSerializable):
     def __init__(self, arg: str = "bar"):
-        super().__init__(string=arg)
+        super().__init__()
         self.enum = ExampleEnum.TWO
         self.other = NamedEnum.TWO
 
@@ -80,7 +80,7 @@ class TestJSONLinesHelpers(TestCase):
         data_1 = ExampleJSONSerializable("Hello")
         data_2 = ExampleJSONSerializable("World")
         data_3 = ExampleJSONSerializable("Test")
-        with jsonlines.Writer(buffer, dumps=default_json_dumps) as writer:
+        with jsonlines.Writer(buffer, _dumps=default_json_dumps) as writer:
             writer.write(data_1)
             writer.write(data_2)
             writer.write(data_3)
@@ -89,7 +89,7 @@ class TestJSONLinesHelpers(TestCase):
         buffer.close()
 
         buffer = io.StringIO(output_string)
-        with jsonlines.Reader(buffer, loads=default_json_loads) as reader:
+        with jsonlines.Reader(buffer, _loads=default_json_loads) as reader:
             results = [x for x in reader]
 
         self.assertDictEqual(results[0].__dict__, data_1.__dict__)

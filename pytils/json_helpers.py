@@ -20,7 +20,7 @@ class JSONSerializable:
     More advanced serialization cases can be accommodated by overriding to_dict() and from_dict().
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self):
         self._cls_type_ = self.fqcn()
         json_register_class(self.__class__)
 
