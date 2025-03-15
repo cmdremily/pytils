@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from enum import Enum
 from json import JSONDecoder, dumps, loads, JSONEncoder
+from pathlib import Path
 from typing import Any, Type
+import jsonlines
 
 _type_map: dict[str, Type[JSONSerializable | JSONEnum]] = {}
 
@@ -81,7 +83,7 @@ class DefaultJSONEncoder(JSONEncoder):
         return super().default(o)
 
 
-def default_json_dumps(obj: Any) -> (str | bytes):
+def default_json_dumps(obj: Any) -> str | bytes:
     return dumps(obj, cls=DefaultJSONEncoder)
 
 
@@ -103,3 +105,17 @@ class DefaultJSONDecoder(JSONDecoder):
 
 def default_json_loads(json_string: str | bytes) -> Any:
     return loads(json_string, cls=DefaultJSONDecoder)
+
+
+# These wrappers avoid issues with pylance getting confused over PathLike not being a complete type and thus allow us to avoid having to sprinkle type:ignore all over the code using this library.
+
+def jsonlines_writer(file: str | int | Path) -> jsonlines.Writer:
+    return jsonlines.open(file, mode='w', dumps=default_json_dumps)  # type: ignore
+
+
+def jsonlines_appender(file: str | int | Path) -> jsonlines.Writer:
+    return jsonlines.open(file, mode='a', dumps=default_json_dumps)  # type: ignore
+
+
+def jsonlines_reader(file: str | int | Path) -> jsonlines.Reader:
+    return jsonlines.open(file, mode='r', loads=default_json_loads)  # type: ignore

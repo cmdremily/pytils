@@ -1,12 +1,14 @@
 import io
 import json
 from enum import auto
+import os
+import tempfile
 from unittest import TestCase
 
 import jsonlines
 
 from pytils.json_helpers import DefaultJSONDecoder, default_json_dumps, DefaultJSONEncoder, default_json_loads, \
-    JSONEnum, JSONSerializable
+    JSONEnum, JSONSerializable, jsonlines_reader, jsonlines_writer
 
 
 class ExampleEnum(JSONEnum):
@@ -95,3 +97,21 @@ class TestJSONLinesHelpers(TestCase):
         self.assertDictEqual(results[0].__dict__, data_1.__dict__)
         self.assertDictEqual(results[1].__dict__, data_2.__dict__)
         self.assertDictEqual(results[2].__dict__, data_3.__dict__)
+
+    def test_files(self):
+        with tempfile.TemporaryDirectory() as tmp_dirname:
+            test_file = os.path.join(tmp_dirname, "test.jsonl")
+            data_1 = ExampleJSONSerializable("Hello")
+            data_2 = ExampleJSONSerializable("World")
+            data_3 = ExampleJSONSerializable("Test")
+            with jsonlines_writer(test_file) as writer:
+                writer.write(data_1)
+                writer.write(data_2)
+                writer.write(data_3)
+
+            with jsonlines_reader(test_file) as reader:
+                results = [x for x in reader]
+
+            self.assertDictEqual(results[0].__dict__, data_1.__dict__)
+            self.assertDictEqual(results[1].__dict__, data_2.__dict__)
+            self.assertDictEqual(results[2].__dict__, data_3.__dict__)
