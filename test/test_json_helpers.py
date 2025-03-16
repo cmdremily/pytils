@@ -1,14 +1,23 @@
+# coding=utf-8
 import io
 import json
-from enum import auto
 import os
 import tempfile
+from enum import auto
 from unittest import TestCase
 
 import jsonlines
 
-from pytils.json_helpers import DefaultJSONDecoder, default_json_dumps, DefaultJSONEncoder, default_json_loads, \
-    JSONEnum, JSONSerializable, jsonlines_reader, jsonlines_writer
+from pytils.json_helpers import (
+    DefaultJSONDecoder,
+    default_json_dumps,
+    DefaultJSONEncoder,
+    default_json_loads,
+    JSONEnum,
+    JSONSerializable,
+    jsonlines_reader,
+    jsonlines_writer,
+)
 
 
 class ExampleEnum(JSONEnum):
@@ -22,14 +31,14 @@ class NamedEnum(JSONEnum):
 
 
 class ExampleWithEnumExampleJSONSerializable(JSONSerializable):
-    def __init__(self, arg: str = "bar"):
+    def __init__(self) -> None:
         super().__init__()
         self.enum = ExampleEnum.TWO
         self.other = NamedEnum.TWO
 
 
 class ExampleJSONSerializable(JSONSerializable):
-    def __init__(self, string: str = "bar"):
+    def __init__(self, string: str = "bar") -> None:
         super().__init__()
         self.string = string
         self.list = ["hello", "world"]
@@ -37,39 +46,39 @@ class ExampleJSONSerializable(JSONSerializable):
 
 
 class ExampleSubclassJSONSerializable(ExampleJSONSerializable):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.child = "child"
 
 
 class ExampleMemberObjectJSONSerializable(JSONSerializable):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.left = ExampleJSONSerializable("foo")
         self.right = ExampleJSONSerializable("bar")
 
 
 class TestJSONHelpers(TestCase):
-    def test_simple(self):
+    def test_simple(self) -> None:
         data = ExampleJSONSerializable()
         encoded = json.dumps(data, cls=DefaultJSONEncoder)
         decoded = json.loads(encoded, cls=DefaultJSONDecoder)
         self.assertDictEqual(data.__dict__, decoded.__dict__)
 
-    def test_subclass(self):
+    def test_subclass(self) -> None:
         data = ExampleSubclassJSONSerializable()
         encoded = json.dumps(data, cls=DefaultJSONEncoder)
         decoded = json.loads(encoded, cls=DefaultJSONDecoder)
         self.assertDictEqual(data.__dict__, decoded.__dict__)
 
-    def test_member_objects_subclass(self):
+    def test_member_objects_subclass(self) -> None:
         data = ExampleMemberObjectJSONSerializable()
         encoded = json.dumps(data, cls=DefaultJSONEncoder)
         decoded = json.loads(encoded, cls=DefaultJSONDecoder)
         self.assertDictEqual(data.left.__dict__, decoded.left.__dict__)
         self.assertDictEqual(data.right.__dict__, decoded.right.__dict__)
 
-    def test_enum(self):
+    def test_enum(self) -> None:
         data = ExampleWithEnumExampleJSONSerializable()
         encoded = json.dumps(data, cls=DefaultJSONEncoder)
         decoded = json.loads(encoded, cls=DefaultJSONDecoder)
@@ -77,12 +86,12 @@ class TestJSONHelpers(TestCase):
 
 
 class TestJSONLinesHelpers(TestCase):
-    def test_simple(self):
+    def test_simple(self) -> None:
         buffer = io.StringIO()
         data_1 = ExampleJSONSerializable("Hello")
         data_2 = ExampleJSONSerializable("World")
         data_3 = ExampleJSONSerializable("Test")
-        with jsonlines.Writer(buffer, _dumps=default_json_dumps) as writer:
+        with jsonlines.Writer(buffer, dumps=default_json_dumps) as writer:
             writer.write(data_1)
             writer.write(data_2)
             writer.write(data_3)
@@ -91,14 +100,14 @@ class TestJSONLinesHelpers(TestCase):
         buffer.close()
 
         buffer = io.StringIO(output_string)
-        with jsonlines.Reader(buffer, _loads=default_json_loads) as reader:
+        with jsonlines.Reader(buffer, loads=default_json_loads) as reader:
             results = [x for x in reader]
 
         self.assertDictEqual(results[0].__dict__, data_1.__dict__)
         self.assertDictEqual(results[1].__dict__, data_2.__dict__)
         self.assertDictEqual(results[2].__dict__, data_3.__dict__)
 
-    def test_files(self):
+    def test_files(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dirname:
             test_file = os.path.join(tmp_dirname, "test.jsonl")
             data_1 = ExampleJSONSerializable("Hello")

@@ -1,2 +1,7 @@
 jsonlines~=4.0.0
 setuptools~=75.5.0
+
+mypy~=1.15.0
+pylint~=3.3.5a0
+pylint-flask~=0.6
+black~=25.1.0

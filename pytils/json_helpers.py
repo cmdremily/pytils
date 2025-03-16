@@ -1,9 +1,11 @@
+# coding=utf-8
 from __future__ import annotations
 
 from enum import Enum
 from json import JSONDecoder, dumps, loads, JSONEncoder
 from pathlib import Path
 from typing import Any, Type
+
 import jsonlines
 
 _type_map: dict[str, Type[JSONSerializable | JSONEnum]] = {}
@@ -22,7 +24,7 @@ class JSONSerializable:
     More advanced serialization cases can be accommodated by overriding to_dict() and from_dict().
     """
 
-    def __init__(self):
+    def __init__(self, **kwargs: dict[str, Any]) -> None:
         self._cls_type_ = self.fqcn()
         json_register_class(self.__class__)
 
@@ -58,7 +60,7 @@ class JSONSerializable:
 
 
 class JSONEnum(Enum):
-    def __init__(self, _: Any):
+    def __init__(self, _: Any) -> None:
         self._cls_type_ = self.fqcn()
         json_register_class(self.__class__)
 
@@ -71,7 +73,7 @@ class JSONEnum(Enum):
 
     @classmethod
     def from_dict(cls, obj: dict[str, str]) -> JSONEnum:
-        return cls[obj['name']]
+        return cls[obj["name"]]
 
 
 class DefaultJSONEncoder(JSONEncoder):
@@ -90,13 +92,13 @@ def default_json_dumps(obj: Any) -> str | bytes:
 class DefaultJSONDecoder(JSONDecoder):
     """Generic JSON Decoder for generic types and classes that implement JSONSerializable."""
 
-    def __init__(self, *args: tuple[Any], **kwargs: dict[str, Any]):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(object_hook=self.as_json_serializable, *args, **kwargs)
 
     @staticmethod
     def as_json_serializable(o: dict[str, Any]) -> Any:
-        if '_cls_type_' in o:
-            cls_type = o.get('_cls_type_')
+        if "_cls_type_" in o:
+            cls_type = o.get("_cls_type_")
             if isinstance(cls_type, str):
                 cls = _type_map[cls_type]
                 return cls.from_dict(o)
@@ -108,14 +110,13 @@ def default_json_loads(json_string: str | bytes) -> Any:
 
 
 # These wrappers avoid issues with pylance getting confused over PathLike not being a complete type and thus allow us to avoid having to sprinkle type:ignore all over the code using this library.
-
 def jsonlines_writer(file: str | int | Path) -> jsonlines.Writer:
-    return jsonlines.open(file, mode='w', dumps=default_json_dumps)  # type: ignore
+    return jsonlines.open(file, mode="w", dumps=default_json_dumps)
 
 
 def jsonlines_appender(file: str | int | Path) -> jsonlines.Writer:
-    return jsonlines.open(file, mode='a', dumps=default_json_dumps)  # type: ignore
+    return jsonlines.open(file, mode="a", dumps=default_json_dumps)
 
 
 def jsonlines_reader(file: str | int | Path) -> jsonlines.Reader:
-    return jsonlines.open(file, mode='r', loads=default_json_loads)  # type: ignore
+    return jsonlines.open(file, mode="r", loads=default_json_loads)
