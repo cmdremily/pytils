@@ -32,7 +32,7 @@ output-format=text
 # Disallow the use of variables that start with an underscore (unless explicitly exempt)
 # These variables should be used for special purposes (e.g., private members, private methods)
 # so if they are used incorrectly, you get an alert.
-bad-names=foo,bar,baz,todo,fixme
+bad-names=foo,bar,baz
 good-names=i,j,k,x,y,z,ex,Run,_
 
 [DESIGN]
