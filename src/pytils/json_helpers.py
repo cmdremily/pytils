@@ -20,7 +20,7 @@ class JSONSerializable:
     More advanced serialization cases can be accommodated by overriding to_dict() and from_dict().
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: object) -> None:
         self._cls_type_ = self.fqcn()
         json_register_class(self.__class__)
 
@@ -56,7 +56,7 @@ class JSONSerializable:
 
 
 class JSONEnum(Enum):
-    def __init__(self, _: Any):
+    def __init__(self, _: Any) -> None:
         self._cls_type_ = self.fqcn()
         json_register_class(self.__class__)
 
@@ -69,7 +69,7 @@ class JSONEnum(Enum):
 
     @classmethod
     def from_dict(cls, obj: dict[str, str]) -> JSONEnum:
-        return cls[obj['name']]
+        return cls[obj["name"]]
 
 
 class DefaultJSONEncoder(JSONEncoder):
@@ -81,20 +81,20 @@ class DefaultJSONEncoder(JSONEncoder):
         return super().default(o)
 
 
-def default_json_dumps(obj: Any) -> (str | bytes):
+def default_json_dumps(obj: Any) -> str | bytes:
     return dumps(obj, cls=DefaultJSONEncoder)
 
 
 class DefaultJSONDecoder(JSONDecoder):
     """Generic JSON Decoder for generic types and classes that implement JSONSerializable."""
 
-    def __init__(self, *args: tuple[Any], **kwargs: dict[str, Any]):
+    def __init__(self, *args: tuple[Any], **kwargs: Any) -> None:
         super().__init__(object_hook=self.as_json_serializable, *args, **kwargs)
 
     @staticmethod
     def as_json_serializable(o: dict[str, Any]) -> Any:
-        if '_cls_type_' in o:
-            cls_type = o.get('_cls_type_')
+        if "_cls_type_" in o:
+            cls_type = o.get("_cls_type_")
             if isinstance(cls_type, str):
                 cls = _type_map[cls_type]
                 return cls.from_dict(o)

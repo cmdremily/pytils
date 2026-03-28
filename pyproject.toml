@@ -1,6 +1,40 @@
+[project]
+name = "pyTils"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "jsonlines~=4.0.0",
+    "pydantic>=2.12.5",
+    "setuptools~=75.5.0",
+]
+
 [build-system]
 requires = ["setuptools>=42", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+mypkg = ["py.typed"]
+
+
 [tool.mypy]
 strict = true
+
+[dependency-groups]
+dev = [
+    "mypy>=1.19.1",
+    "pytest-cov>=7.1.0",
+    "ruff>=0.15.0",
+    "setuptools>=75.5.0",
+]
+lsp = [
+    "basedpyright>=1.38.4",
+    "coverage>=7.13.5",
+    "rassumfrassum>=0.3.3",
+    "ruff>=0.15.0",
+]

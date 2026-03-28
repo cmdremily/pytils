@@ -5,8 +5,14 @@ from unittest import TestCase
 
 import jsonlines
 
-from pytils.json_helpers import DefaultJSONDecoder, default_json_dumps, DefaultJSONEncoder, default_json_loads, \
-    JSONEnum, JSONSerializable
+from pytils.json_helpers import (
+    DefaultJSONDecoder,
+    default_json_dumps,
+    DefaultJSONEncoder,
+    default_json_loads,
+    JSONEnum,
+    JSONSerializable,
+)
 
 
 class ExampleEnum(JSONEnum):
@@ -20,14 +26,14 @@ class NamedEnum(JSONEnum):
 
 
 class ExampleWithEnumExampleJSONSerializable(JSONSerializable):
-    def __init__(self, arg: str = "bar"):
+    def __init__(self, arg: str = "bar") -> None:
         super().__init__(string=arg)
         self.enum = ExampleEnum.TWO
         self.other = NamedEnum.TWO
 
 
 class ExampleJSONSerializable(JSONSerializable):
-    def __init__(self, string: str = "bar"):
+    def __init__(self, string: str = "bar") -> None:
         super().__init__()
         self.string = string
         self.list = ["hello", "world"]
@@ -35,39 +41,39 @@ class ExampleJSONSerializable(JSONSerializable):
 
 
 class ExampleSubclassJSONSerializable(ExampleJSONSerializable):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.child = "child"
 
 
 class ExampleMemberObjectJSONSerializable(JSONSerializable):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.left = ExampleJSONSerializable("foo")
         self.right = ExampleJSONSerializable("bar")
 
 
 class TestJSONHelpers(TestCase):
-    def test_simple(self):
+    def test_simple(self) -> None:
         data = ExampleJSONSerializable()
         encoded = json.dumps(data, cls=DefaultJSONEncoder)
         decoded = json.loads(encoded, cls=DefaultJSONDecoder)
         self.assertDictEqual(data.__dict__, decoded.__dict__)
 
-    def test_subclass(self):
+    def test_subclass(self) -> None:
         data = ExampleSubclassJSONSerializable()
         encoded = json.dumps(data, cls=DefaultJSONEncoder)
         decoded = json.loads(encoded, cls=DefaultJSONDecoder)
         self.assertDictEqual(data.__dict__, decoded.__dict__)
 
-    def test_member_objects_subclass(self):
+    def test_member_objects_subclass(self) -> None:
         data = ExampleMemberObjectJSONSerializable()
         encoded = json.dumps(data, cls=DefaultJSONEncoder)
         decoded = json.loads(encoded, cls=DefaultJSONDecoder)
         self.assertDictEqual(data.left.__dict__, decoded.left.__dict__)
         self.assertDictEqual(data.right.__dict__, decoded.right.__dict__)
 
-    def test_enum(self):
+    def test_enum(self) -> None:
         data = ExampleWithEnumExampleJSONSerializable()
         encoded = json.dumps(data, cls=DefaultJSONEncoder)
         decoded = json.loads(encoded, cls=DefaultJSONDecoder)
@@ -75,7 +81,7 @@ class TestJSONHelpers(TestCase):
 
 
 class TestJSONLinesHelpers(TestCase):
-    def test_simple(self):
+    def test_simple(self) -> None:
         buffer = io.StringIO()
         data_1 = ExampleJSONSerializable("Hello")
         data_2 = ExampleJSONSerializable("World")
