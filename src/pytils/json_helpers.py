@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from enum import Enum
 from json import JSONDecoder, dumps, loads, JSONEncoder
-from typing import Any, Type
+from typing import Any, override
 
-_type_map: dict[str, Type[JSONSerializable | JSONEnum]] = {}
+_type_map: dict[str, type[JSONSerializable | JSONEnum]] = {}
 
 
-def json_register_class(cls: Type[JSONSerializable | JSONEnum]) -> None:
+def json_register_class(cls: type[JSONSerializable | JSONEnum]) -> None:
     fqcn = cls.fqcn()
     if fqcn not in _type_map:
         _type_map[fqcn] = cls
@@ -21,7 +21,7 @@ class JSONSerializable:
     """
 
     def __init__(self, **kwargs: object) -> None:
-        self._cls_type_ = self.fqcn()
+        self._cls_type_: str = self.fqcn()
         json_register_class(self.__class__)
 
     def to_dict(self) -> dict[str, Any]:
@@ -38,11 +38,11 @@ class JSONSerializable:
         return self.__dict__
 
     @classmethod
-    def fqcn(cls: Type[JSONSerializable]) -> str:
+    def fqcn(cls: type[JSONSerializable]) -> str:
         return f"{cls.__module__}#{cls.__qualname__}"
 
     @classmethod
-    def from_dict(cls: Type[JSONSerializable], obj: dict[str, Any]) -> JSONSerializable:
+    def from_dict(cls: type[JSONSerializable], obj: dict[str, Any]) -> JSONSerializable:
         """Creates a new class object from a dictionary previously created by to_dict().
 
         :param obj: The dictionary containing all the fields required to reconstruct the object.
@@ -64,7 +64,7 @@ class JSONEnum(Enum):
         return {"_cls_type_": self._cls_type_, "name": self.name}
 
     @classmethod
-    def fqcn(cls: Type[JSONEnum]) -> str:
+    def fqcn(cls: type[JSONEnum]) -> str:
         return f"{cls.__module__}#{cls.__qualname__}"
 
     @classmethod
@@ -75,6 +75,7 @@ class JSONEnum(Enum):
 class DefaultJSONEncoder(JSONEncoder):
     """Generic JSON Encoder to encode generic types and objects that are instances of JSONSerializable."""
 
+    @override
     def default(self, o: Any) -> Any:
         if isinstance(o, JSONSerializable) or isinstance(o, JSONEnum):
             return o.to_dict()
